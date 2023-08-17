@@ -45,7 +45,11 @@ public class ShareSubscriptionService {
 
 		if (subscribedCategory.getPrice() == 0) {
 			throw new BadRequestException("Sorry Free Subscription can not be shared !!" + category.getName()
-					+ " is Free Subscribtion only for you ! ");
+					+ " is Free Subscribtion only for yo!");
+		}
+		if (subscribedCategory.getRemainingContent() == 1) {
+			throw new BadRequestException("Sorry you have only 1 content left for !!" + category.getName()
+					+ " category ! You can not share this category! ");
 		}
 
 		Optional.ofNullable(
@@ -53,7 +57,6 @@ public class ShareSubscriptionService {
 				.ifPresent(s -> {
 					throw new BadRequestException("Already Subscribed to " + s.getName() + " !!");
 				});
-		//TODO : Customer can not share Subscription if he has only 1 subscription left
 		double pricePerContent = calculateSharedPriceForCategory(subscribedCategory.getCategory().getAvailableContent(),
 				subscribedCategory.getRemainingContent(), subscribedCategory.getCategory().getPrice());
 
@@ -76,7 +79,7 @@ public class ShareSubscriptionService {
 		subscriptionRepository.save(Subscription.builder().customer(sharedCustomer).category(category)
 				.name(category.getName()).price(pricePerContent * remainingContent).remainingContent(remainingContent)
 				.startDate(LocalDate.now()).subsType(SubscriptionType.SHARED).build());
-		
+
 		log.info("Subscription is shared");
 
 		return new ResponseDTO("Subscription shared successfully",
